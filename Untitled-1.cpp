@@ -103,21 +103,49 @@ int main()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);*/
 
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, channelsNum;
-	unsigned char* texData = stbi_load("wall.jpg", &width, &height, &channelsNum, 0);
-	if (texData)
+	int width1, height1, channelsNum1;
+	unsigned char* texData1 = stbi_load("wall.jpg", &width1, &height1, &channelsNum1, 0);
+	if (texData1)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+		//internalFormat argument: how opengl is going to store the texture data
+		//format argument: format of the pixel data provided
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, texData1);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(texData);
+		stbi_image_free(texData1);
+	}
+	else
+	{
+		std::cerr << "Failed to load the texture";
+	}
+
+	//operations done on buffer are stored in the texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	int width2, height2, channelsNum2;
+	unsigned char* texData2 = stbi_load("awesomeface.png", &width2, &height2, &channelsNum2, 0);
+	if (texData2)
+	{	
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData2);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(texData2);
 	}
 	else
 	{
@@ -125,6 +153,9 @@ int main()
 	}
 
 	Shader shader("./v.vert", "./f.frag");
+	shader.useProgram();
+	shader.setInt("texture1", 0);
+	shader.setInt("texture2", 1);
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -134,7 +165,11 @@ int main()
 		processInput(window);
 
 		//rendering commands
-		shader.useProgram();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
