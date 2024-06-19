@@ -1,9 +1,12 @@
+#include <iostream>
 #include <glad/glad.h>//loads functions to function pointers
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <shader.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 int main();
 
@@ -113,6 +116,8 @@ int main()
 
 	int width1, height1, channelsNum1;
 	unsigned char* texData1 = stbi_load("wall.jpg", &width1, &height1, &channelsNum1, 0);
+
+
 	if (texData1)
 	{
 		//internalFormat argument: how opengl is going to store the texture data
@@ -138,7 +143,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	int width2, height2, channelsNum2;
 	unsigned char* texData2 = stbi_load("awesomeface.png", &width2, &height2, &channelsNum2, 0);
 	if (texData2)
@@ -156,6 +161,9 @@ int main()
 	shader.useProgram();
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
+
+	//rotate and scale
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -165,6 +173,10 @@ int main()
 		processInput(window);
 
 		//rendering commands
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
+		trans = glm::scale(trans, glm::vec3(1.5f, 1.5f, 0.5));
+		shader.setMat4("trans", trans);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
