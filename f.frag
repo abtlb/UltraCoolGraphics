@@ -10,5 +10,6 @@ uniform float test;
 
 void main()
 {
-	fragColor = mix(texture(texture1, texCoord), texture(texture2, texCoord), 0.5);
+	vec2 texCoord2 = vec2(texCoord.x, 1 - texCoord.y);
+	fragColor = mix(texture(texture1, texCoord), texture(texture2, texCoord2), 0.5);
 }
