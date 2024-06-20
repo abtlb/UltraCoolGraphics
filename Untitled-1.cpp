@@ -23,6 +23,8 @@ public:
 	float a;
 };
 
+int width, height;
+
 int main()
 {
 	//initialize glfw,configure glfw options
@@ -32,7 +34,9 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//create a window
-	GLFWwindow* window = glfwCreateWindow(500, 500, "Epic stuff", NULL, NULL);
+	width = 500;
+	height = 500;
+	GLFWwindow* window = glfwCreateWindow(width, height, "Epic stuff", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to initialize OpenGL window";
@@ -48,7 +52,7 @@ int main()
 		return -1;
 	}
 	
-	glViewport(0, 0, 500, 500);
+	glViewport(0, 0, width, height);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);//callback function on window resize
 
 	//rectangle
@@ -246,12 +250,25 @@ int main()
 			model = glm::translate(model, cubePositions[i]);
 			model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
 			shader.setMat4("model", model);
+			/*glm::mat4 view = glm::mat4(1.0f);
+			view = glm::translate(view, glm::vec3(0.0f, 0, -5.0f));*/
+			//camera start
+			glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+			glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);//world space origin point
+			glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+			glm::vec3 cameraZ = cameraPos - cameraTarget;//+Z camera axis
+			glm::vec3 cameraX = glm::cross(worldUp, cameraZ);
+			glm::vec3 cameraY = glm::cross(cameraZ, cameraX);
+			const float radius = 10.0f;
+			float camX = sin(glfwGetTime()) * radius;
+			float camZ = cos(glfwGetTime()) * radius;
 			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::translate(view, glm::vec3(0.0f, 0, -5.0f));
+			view = glm::lookAt(glm::vec3(camX, 0, camZ), cameraTarget, worldUp);
 			shader.setMat4("view", view);
 			glm::mat4 proj = glm::mat4(1.0f);
-			proj = glm::perspective(glm::radians(45.0f), 500.0f / 500.0f, 0.1f, 100.0f);
+			proj = glm::perspective(glm::radians(45.0f), float(width) / height, 0.1f, 100.0f);
 			shader.setMat4("proj", proj);
+			//camera end
 			glBindVertexArray(cubeVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
@@ -264,9 +281,11 @@ int main()
 	return 0;
 }
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void framebufferSizeCallback(GLFWwindow* window, int _width, int _height)
 {
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, _width, _height);
+	width = _width;
+	height = _height;
 }
 
 void processInput(GLFWwindow* window)
