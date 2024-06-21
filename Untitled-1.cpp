@@ -24,6 +24,12 @@ public:
 };
 
 int width, height;
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
+glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraX = glm::cross(cameraY, cameraZ);
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main()
 {
@@ -212,6 +218,10 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -253,17 +263,23 @@ int main()
 			/*glm::mat4 view = glm::mat4(1.0f);
 			view = glm::translate(view, glm::vec3(0.0f, 0, -5.0f));*/
 			//camera start
-			glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-			glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);//world space origin point
-			glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-			glm::vec3 cameraZ = cameraPos - cameraTarget;//+Z camera axis
-			glm::vec3 cameraX = glm::cross(worldUp, cameraZ);
-			glm::vec3 cameraY = glm::cross(cameraZ, cameraX);
-			const float radius = 10.0f;
-			float camX = sin(glfwGetTime()) * radius;
-			float camZ = cos(glfwGetTime()) * radius;
+			//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+			//glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);//world space origin point
+			//glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+			//glm::vec3 cameraZ = cameraPos - cameraTarget;//+Z camera axis
+			//glm::vec3 cameraX = glm::cross(worldUp, cameraZ);
+			//glm::vec3 cameraY = glm::cross(cameraZ, cameraX);
+			//const float radius = 10.0f;
+			//float camX = sin(glfwGetTime()) * radius;
+			//float camZ = cos(glfwGetTime()) * radius;
+			//glm::mat4 view = glm::mat4(1.0f);
+			//view = glm::lookAt(glm::vec3(camX, 0, camZ), cameraTarget, worldUp);
 			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::lookAt(glm::vec3(camX, 0, camZ), cameraTarget, worldUp);
+			view = glm::lookAt(cameraPos, cameraPos + cameraZ, cameraY);
+			/*glm::vec3 direction;
+			direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+			direction.y = cos(glm::radians(pitch));
+			direction.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));*/
 			shader.setMat4("view", view);
 			glm::mat4 proj = glm::mat4(1.0f);
 			proj = glm::perspective(glm::radians(45.0f), float(width) / height, 0.1f, 100.0f);
@@ -293,5 +309,23 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 	{
 		glfwSetWindowShouldClose(window, true);
+	}
+
+	float cameraSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)//forward
+	{
+		cameraPos += cameraSpeed * cameraZ;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)//back
+	{
+		cameraPos -= cameraSpeed * cameraZ;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//right
+	{
+		cameraPos -= cameraSpeed * cameraX;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)//left
+	{
+		cameraPos += cameraSpeed * cameraX;
 	}
 }
