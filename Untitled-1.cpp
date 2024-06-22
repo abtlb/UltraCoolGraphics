@@ -230,7 +230,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//input
@@ -258,26 +258,38 @@ int main()
 		glm::vec3(1.5f, 0.2f, -1.5f),
 		glm::vec3(-1.3f, 1.0f, -1.5f)
 		};
+
 		glEnable(GL_DEPTH_TEST);
-		/*model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 0));
-		model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));*/
-		int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
-			shader.setMat4("model", model);
 
-			glm::mat4 view = camera.getViewMat();
-			glm::mat4 proj = camera.getProjMat();
+		//10 rotating cubes
+		//int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
+		//for (int i = 0; i < 10; i++)
+		//{
+		//	glm::mat4 model = glm::mat4(1.0f);
+		//	model = glm::translate(model, cubePositions[i]);
+		//	model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
+		//	shader.setMat4("model", model);
 
-			shader.setMat4("view", view);
-			shader.setMat4("proj", proj);
-			//camera end
-			glBindVertexArray(cubeVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		//	glm::mat4 view = camera.getViewMat();
+		//	glm::mat4 proj = camera.getProjMat();
+
+		//	shader.setMat4("view", view);
+		//	shader.setMat4("proj", proj);
+		//	//camera end
+		//	glBindVertexArray(cubeVAO);
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//}
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0, 0, 0));
+		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view = camera.getViewMat();
+		glm::mat4 proj = camera.getProjMat();
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("proj", proj);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
