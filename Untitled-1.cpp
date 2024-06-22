@@ -65,7 +65,7 @@ int main()
 	glViewport(0, 0, width, height);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);//callback function on window resize
 
-	//rectangle
+	/*//rectangle
 	float vertices[] =
 	{
 		//positions        color             tex coords
@@ -99,7 +99,7 @@ int main()
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
 
 	//cube
 	float cubeVertices[] =
@@ -148,10 +148,17 @@ int main()
 	glGenBuffers(1, &cubeVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	unsigned int lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT ,GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
@@ -205,9 +212,17 @@ int main()
 	}
 
 	Shader shader("./v.vert", "./f.frag");
-	shader.useProgram();
+	//shader.useProgram();
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
+
+	Shader lightingShader("./lighting.vert", "./lighting.frag");
+	lightingShader.useProgram();
+   	lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+   	lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+
+	Shader lightSourceShader("./lightSource.vert", "./lightSource.frag");
+	glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 	float cubeRotSpeeds[10] = {2};
 	for (int i = 0; i < 10; i++)
@@ -280,15 +295,33 @@ int main()
 		//	glDrawArrays(GL_TRIANGLES, 0, 36);
 		//}
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0, 0, 0));
+		glm::mat4 model, view, proj;
+
+		/*//light source
+		lightSourceShader.useProgram();
+		model = glm::mat4(1.0f);
+		model = glm::mat4(1.0f);
+	   	model = glm::translate(model, lightPos);
+   		model = glm::scale(model, glm::vec3(0.2f));
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		lightSourceShader.setMat4("model", model);
+		lightSourceShader.setMat4("view", view);
+		lightSourceShader.setMat4("proj", proj);
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);*/
+
+		//our cube
+		lightingShader.useProgram();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0, 3.0f, 0));
 		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 view = camera.getViewMat();
-		glm::mat4 proj = camera.getProjMat();
-		shader.setMat4("model", model);
-		shader.setMat4("view", view);
-		shader.setMat4("proj", proj);
-		glBindVertexArray(cubeVAO);
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		lightingShader.setMat4("model", model);
+		lightingShader.setMat4("view", view);
+		lightingShader.setMat4("proj", proj);
+		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
@@ -336,11 +369,13 @@ void processInput(GLFWwindow* window)
 	float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)//forward
 	{
-		camera.cameraPos += cameraSpeed * camera.cameraZ;
+		//fps camera(should be in camera class)
+		camera.cameraPos += cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)//back
 	{
-		camera.cameraPos -= cameraSpeed * camera.cameraZ;
+		//fps camera(should be in camera class)
+		camera.cameraPos -= cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//right
 	{
