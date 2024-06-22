@@ -24,7 +24,7 @@ public:
 		screenRatio = _screenRatio;
 	}
 
-	glm::mat4& getViewMat()//~
+	glm::mat4 getViewMat()
 	{
 		glm::vec3 direction;
 		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -45,7 +45,7 @@ public:
 		return view;
 	}
 
-	glm::mat4& getProjMat()
+	glm::mat4 getProjMat()
 	{
 		glm::mat4 proj = glm::mat4(1.0f);
 		proj = glm::perspective(glm::radians(fov), screenRatio, 0.1f, 100.0f);
