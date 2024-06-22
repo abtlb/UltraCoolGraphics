@@ -7,10 +7,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Camera.h"
 
 int main();
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void processInput(GLFWwindow*);
 
 struct Color
@@ -23,11 +25,15 @@ public:
 	float a;
 };
 
-int width, height;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
-glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraX = glm::cross(cameraY, cameraZ);
+int width = 500, height = 500;
+//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+//glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
+//glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
+//glm::vec3 cameraX = glm::cross(cameraY, cameraZ);
+//float yaw = -90.0f, pitch = 0.0f;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), 45.0f, (float)width / height);
+
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -40,8 +46,6 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//create a window
-	width = 500;
-	height = 500;
 	GLFWwindow* window = glfwCreateWindow(width, height, "Epic stuff", NULL, NULL);
 	if (window == NULL)
 	{
@@ -216,6 +220,10 @@ int main()
 		cubeRotAxis[i] = glm::vec3(((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX));
 	}
 
+	//setup mouse input
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
+	glfwSetCursorPosCallback(window, mouse_callback);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -260,29 +268,11 @@ int main()
 			model = glm::translate(model, cubePositions[i]);
 			model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
 			shader.setMat4("model", model);
-			/*glm::mat4 view = glm::mat4(1.0f);
-			view = glm::translate(view, glm::vec3(0.0f, 0, -5.0f));*/
-			//camera start
-			//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-			//glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);//world space origin point
-			//glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-			//glm::vec3 cameraZ = cameraPos - cameraTarget;//+Z camera axis
-			//glm::vec3 cameraX = glm::cross(worldUp, cameraZ);
-			//glm::vec3 cameraY = glm::cross(cameraZ, cameraX);
-			//const float radius = 10.0f;
-			//float camX = sin(glfwGetTime()) * radius;
-			//float camZ = cos(glfwGetTime()) * radius;
-			//glm::mat4 view = glm::mat4(1.0f);
-			//view = glm::lookAt(glm::vec3(camX, 0, camZ), cameraTarget, worldUp);
-			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::lookAt(cameraPos, cameraPos + cameraZ, cameraY);
-			/*glm::vec3 direction;
-			direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-			direction.y = cos(glm::radians(pitch));
-			direction.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));*/
+
+			glm::mat4 view = camera.getViewMat();
+			glm::mat4 proj = camera.getProjMat();
+
 			shader.setMat4("view", view);
-			glm::mat4 proj = glm::mat4(1.0f);
-			proj = glm::perspective(glm::radians(45.0f), float(width) / height, 0.1f, 100.0f);
 			shader.setMat4("proj", proj);
 			//camera end
 			glBindVertexArray(cubeVAO);
@@ -304,6 +294,26 @@ void framebufferSizeCallback(GLFWwindow* window, int _width, int _height)
 	height = _height;
 }
 
+void mouse_callback(GLFWwindow* window, double xPos, double yPos)
+{
+	float sens = 0.1f;
+	static float lastX = width / 2.0f, lastY = height / 2.0f;
+	float xOffset = xPos - lastX, yOffset = lastY - yPos;//y screen coordinates range from top to bottom
+	lastX = xPos;
+	lastY = yPos;
+
+	xOffset *= sens;
+	yOffset *= sens;
+	camera.yaw += xOffset;
+	camera.pitch += yOffset;
+
+	//prevent flip
+	if (camera.pitch > 89.0f)
+		camera.pitch = 89.0f;
+	if (camera.pitch < -89.0f)
+		camera.pitch = -89.0f;
+}
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -314,18 +324,18 @@ void processInput(GLFWwindow* window)
 	float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)//forward
 	{
-		cameraPos += cameraSpeed * cameraZ;
+		camera.cameraPos += cameraSpeed * camera.cameraZ;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)//back
 	{
-		cameraPos -= cameraSpeed * cameraZ;
+		camera.cameraPos -= cameraSpeed * camera.cameraZ;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//right
 	{
-		cameraPos -= cameraSpeed * cameraX;
+		camera.cameraPos -= cameraSpeed * camera.cameraX;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)//left
 	{
-		cameraPos += cameraSpeed * cameraX;
+		camera.cameraPos += cameraSpeed * camera.cameraX;
 	}
 }

@@ -7,20 +7,42 @@
 
 class Camera
 {
+	//cameraPos, cameraZ, cameraY, cameraX, yaw, pitch, direction(same as cameraZ but not normalized), view mat?, proj mat? fov, screenRatio
 public:
-	glm::vec3 cameraPos;
-	glm::vec3 cameraTarget;
-	glm::vec3 worldUp;
-	float fov;
-	float screenRatio;
+	glm::vec3 cameraPos, cameraZ, cameraY, cameraX;
+	float yaw, pitch;//ignoring roll for now
+	float fov, screenRatio;
 
-	Camera(glm::vec3 _cameraPos, glm::vec3 _cameraTarget, glm::vec3 _worldUp)
+	Camera(glm::vec3 _cameraPos, float _fov, float _screenRatio)
 	{
 		cameraPos = _cameraPos;
-		cameraTarget = _cameraTarget;
-		worldUp = _worldUp;
-		fov = 45.0f;
-		screenRatio = 1;
+		cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
+		cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
+		cameraX = glm::cross(cameraY, cameraZ);
+		yaw = -90.0f, pitch = 0.0f;
+		fov = _fov;
+		screenRatio = _screenRatio;
+	}
+
+	glm::mat4& getViewMat()//~
+	{
+		glm::vec3 direction;
+		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.x = cos(glm::radians(yaw)) + sin(glm::radians(pitch)) * sin(glm::radians(yaw)) + sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.y = sin(glm::radians(pitch));
+		direction.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+		cameraZ = glm::normalize(direction);
+
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::lookAt(cameraPos, cameraPos + cameraZ, cameraY);
+		return view;
+	}
+
+	glm::mat4& getProjMat()
+	{
+		glm::mat4 proj = glm::mat4(1.0f);
+		proj = glm::perspective(glm::radians(fov), screenRatio, 0.1f, 100.0f);
+		return proj;
 	}
 };
 
