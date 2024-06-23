@@ -25,7 +25,7 @@ public:
 	float a;
 };
 
-int width = 500, height = 500;
+int width = 800, height = 600;
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
 //glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
 //glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -238,7 +238,7 @@ int main()
 	}
 
 	//setup mouse input
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//capture the cursor and make it non-visible
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	while (!glfwWindowShouldClose(window))
@@ -302,7 +302,7 @@ int main()
 		//light source
 		lightSourceShader.useProgram();
 		model = glm::mat4(1.0f);
-		lightPos = glm::vec3(sin(glfwGetTime() * 0.5f) * 2, lightPos.y, cos(glfwGetTime() * 0.5f) * 2) + glm::vec3(0, 0.0f, 3.0f);
+		//lightPos = glm::vec3(sin(glfwGetTime() * 0.5f) * 2, lightPos.y, cos(glfwGetTime() * 0.5f) * 2) + glm::vec3(0, 0.0f, 3.0f);
 	   	model = glm::translate(model, lightPos);
    		model = glm::scale(model, glm::vec3(0.2f));
 		view = camera.getViewMat();
