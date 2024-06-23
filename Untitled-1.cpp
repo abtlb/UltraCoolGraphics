@@ -238,7 +238,7 @@ int main()
 	}
 
 	//setup mouse input
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//capture the cursor and make it non-visible
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	while (!glfwWindowShouldClose(window))
@@ -247,7 +247,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
+		/*glClearColor(0.3f, 0.3f, 0.5f, 1.0f);*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//input
@@ -302,7 +302,8 @@ int main()
 		//light source
 		lightSourceShader.useProgram();
 		model = glm::mat4(1.0f);
-		//lightPos = glm::vec3(sin(glfwGetTime() * 0.5f) * 2, lightPos.y, cos(glfwGetTime() * 0.5f) * 2) + glm::vec3(0, 0.0f, 3.0f);
+		//inside factor: speed, outside factor: radius
+		lightPos = glm::vec3(sin(glfwGetTime() * 0.4f) * 2, lightPos.y, cos(glfwGetTime() * 0.4f) * 2) + glm::vec3(0, 0.0f, 3.0f);//rotate
 	   	model = glm::translate(model, lightPos);
    		model = glm::scale(model, glm::vec3(0.2f));
 		view = camera.getViewMat();
@@ -315,10 +316,23 @@ int main()
 
 		//our cube
 		lightingShader.useProgram();
-		lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-		lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setVec3("lightPos", lightPos);
+		//lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+		//lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+		glm::vec3 lightColor;
+		lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
+		lightColor.y = sin(glfwGetTime() * 0.3f);
+		lightColor.z = sin(glfwGetTime() * 0.6f);
+		glm::vec3 worldColor = glm::vec3(lightColor.x);
+		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
+		lightingShader.setVec3("light.pos", lightPos);
+		lightingShader.setVec3("light.ambient", lightColor * glm::vec3(0.15f));//i think it's a good idea to multiply the diffuse color by some scalar
+		lightingShader.setVec3("light.diffuse", lightColor * 0.5f);
+		lightingShader.setVec3("light.specular", glm::vec3(1.0f));
+		lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+		lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+		lightingShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		lightingShader.setFloat("material.shininess", 128.0f);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0, 0.0f, 3.0f));
 		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
