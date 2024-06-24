@@ -221,7 +221,7 @@ int main()
 	shader.setInt("texture2", 1);
 
 	Shader lightSourceShader("./lightSource.vert", "./lightSource.frag");
-	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 2.0f);
+	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 4.0f);
 
 	Shader lightingShader("./lighting.vert", "./lighting.frag");
 
@@ -233,19 +233,37 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int width3, height3, channelsNum3;
-	unsigned char* texData3 = stbi_load("container.png", &width3, &height3, &channelsNum3, 0);
+	unsigned char* texData3 = stbi_load("container2.png", &width3, &height3, &channelsNum3, 0);
 	if (texData3)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width3, height3, 0, GL_RGB, GL_UNSIGNED_BYTE, texData3);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width3, height3, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData3);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(texData3);
 	}
 	else
 	{
 		std::cerr << "Failed to load the texture";
 	}
 
-	glActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap1);
-
+	unsigned int specularMap1;
+	glGenTextures(1, &specularMap1);
+	glBindTexture(GL_TEXTURE_2D, specularMap1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int width4, height4, channelsNum4;
+	unsigned char* texData4 = stbi_load("container2_specular.png", &width4, &height4, &channelsNum4, 0);
+	if (texData4)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width4, height4, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData4);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(texData4);
+	}
+	else
+	{
+		std::cerr << "Failed to load the texture";
+	}
 
 	float cubeRotSpeeds[10] = {2};
 	for (int i = 0; i < 10; i++)
@@ -277,9 +295,9 @@ int main()
 		//rendering commands
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		glBindTexture(GL_TEXTURE_2D, specularMap1);
 
 		//glBindVertexArray(VAO);
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -324,7 +342,7 @@ int main()
 		lightSourceShader.useProgram();
 		model = glm::mat4(1.0f);
 		//inside factor: speed, outside factor: radius
-		lightPos = glm::vec3(sin(glfwGetTime() * 0.4f) * 2, lightPos.y, cos(glfwGetTime() * 0.4f) * 2) + glm::vec3(0, 0.0f, 3.0f);//rotate
+		//lightPos = glm::vec3(sin(glfwGetTime() * 0.4f) * 2, .y, cos(glfwGetTime() * 0.4f) * 2) + glm::vec3(0, 0.0f, 3.0f);//rotate
 	   	model = glm::translate(model, lightPos);
    		model = glm::scale(model, glm::vec3(0.2f));
 		view = camera.getViewMat();
@@ -339,20 +357,21 @@ int main()
 		lightingShader.useProgram();
 		//lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
 		//lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::vec3 lightColor;
-		lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
-		lightColor.y = sin(glfwGetTime() * 0.3f);
-		lightColor.z = sin(glfwGetTime() * 0.6f);
-		glm::vec3 worldColor = glm::vec3(lightColor.x);
+		glm::vec3 lightColor = glm::vec3(0.8f);
+		//lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
+		//lightColor.y = sin(glfwGetTime() * 0.3f);
+		//lightColor.z = sin(glfwGetTime() * 0.6f);
+		glm::vec3 worldColor = glm::vec3(0.5f);
 		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
 		lightingShader.setVec3("light.pos", lightPos);
-		lightingShader.setVec3("light.diffuse", lightColor * 0.5f);
-		lightingShader.setVec3("light.specular", glm::vec3(1.0f));
-		lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-		lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-		lightingShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-		lightingShader.setFloat("material.shininess", 128.0f);
+		lightingShader.setVec3("light.diffuse", lightColor);
+		lightingShader.setVec3("light.ambient", glm::vec3(0.3f));
+		lightingShader.setVec3("light.specular", glm::vec3(1.5f));
+		lightingShader.setInt("material.diffuse", 0);
+		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+		lightingShader.setInt("material.specular", 1);
+		lightingShader.setFloat("material.shininess", 64.0f);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0, 0.0f, 3.0f));
 		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
