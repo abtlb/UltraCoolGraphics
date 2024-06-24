@@ -225,6 +225,27 @@ int main()
 
 	Shader lightingShader("./lighting.vert", "./lighting.frag");
 
+	unsigned int diffuseMap1;
+	glGenTextures(1, &diffuseMap1);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int width3, height3, channelsNum3;
+	unsigned char* texData3 = stbi_load("container.png", &width3, &height3, &channelsNum3, 0);
+	if (texData3)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width3, height3, 0, GL_RGB, GL_UNSIGNED_BYTE, texData3);
+	}
+	else
+	{
+		std::cerr << "Failed to load the texture";
+	}
+
+	glActiveTexture(0);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap1);
+
 
 	float cubeRotSpeeds[10] = {2};
 	for (int i = 0; i < 10; i++)
@@ -326,7 +347,6 @@ int main()
 		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
 		lightingShader.setVec3("light.pos", lightPos);
-		lightingShader.setVec3("light.ambient", lightColor * glm::vec3(0.15f));//i think it's a good idea to multiply the diffuse color by some scalar
 		lightingShader.setVec3("light.diffuse", lightColor * 0.5f);
 		lightingShader.setVec3("light.specular", glm::vec3(1.0f));
 		lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
