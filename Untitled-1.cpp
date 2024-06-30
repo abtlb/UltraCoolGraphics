@@ -364,24 +364,32 @@ int main()
 		glm::vec3 worldColor = glm::vec3(0.5f);
 		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
+		//lightingShader.setVec3("light.pos", lightPos);
+		lightingShader.setVec3("light.dir", glm::vec3(-0.2f, -1.0f, -0.3f));
 		lightingShader.setVec3("light.pos", lightPos);
 		lightingShader.setVec3("light.diffuse", lightColor);
 		lightingShader.setVec3("light.ambient", glm::vec3(0.3f));
 		lightingShader.setVec3("light.specular", glm::vec3(1.5f));
+		lightingShader.setFloat("light.constant", 1.0f);
+		lightingShader.setFloat("light.linear", 0.09f);
+		lightingShader.setFloat("light.quadratic", 0.032f);
 		lightingShader.setInt("material.diffuse", 0);
 		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
 		lightingShader.setInt("material.specular", 1);
 		lightingShader.setFloat("material.shininess", 64.0f);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0, 0.0f, 3.0f));
-		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		view = camera.getViewMat();
-		proj = camera.getProjMat();
-		lightingShader.setMat4("model", model);
-		lightingShader.setMat4("view", view);
-		lightingShader.setMat4("proj", proj);
-		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for(int i = 0; i < 10; i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::rotate(model, glm::radians(30.0f) * i, cubeRotAxis[i]);
+			view = camera.getViewMat();
+			proj = camera.getProjMat();
+			lightingShader.setMat4("model", model);
+			lightingShader.setMat4("view", view);
+			lightingShader.setMat4("proj", proj);
+			glBindVertexArray(cubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
