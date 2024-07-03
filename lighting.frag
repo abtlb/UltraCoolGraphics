@@ -27,13 +27,16 @@ struct Light
     float constant;
     float linear;
     float quadratic;
+
+    float innerCutOff;//cos angle
+    float outerCutOff;//cos angle
 };
 uniform Light light;
 
 void main()
 {
-    vec3 lightDir = normalize(light.pos - FragPos);
-    //vec3 lightDir = normalize(-light.dir);
+    vec3 lightDir = normalize(light.pos - FragPos);//point light/spotlight 
+    //vec3 lightDir = normalize(-light.dir);//directional
 
     vec3 norm = normalize(Normal);
 
@@ -49,7 +52,17 @@ void main()
 
     float dist = length(light.pos - FragPos);
     float attenuation = 1.0 / ( light.constant + light.linear * dist + light.quadratic * dist * dist);
-    vec3 result = (ambient + diffuse + specular) * attenuation;
+    ambient *= attenuation;
+    specular *= attenuation;
+    diffuse *= attenuation;
+
+    float theta = dot(lightDir, normalize(-light.dir));//cos
+    float epsilon = light.innerCutOff - light.outerCutOff;//remember, we're subtracting cosines
+    float intensity =  clamp((theta - light.outerCutOff) / epsilon, 0, 1);
+    diffuse *= intensity;
+    specular *= intensity;
+
+    vec3 result = ambient + diffuse + specular;
 
     FragColor = vec4(result, 1.0);
 }
