@@ -357,25 +357,29 @@ int main()
 		lightingShader.useProgram();
 		//lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
 		//lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::vec3 lightColor = glm::vec3(0.8f);
+		glm::vec3 lightColor = glm::vec3(2.0f);
 		//lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
 		//lightColor.y = sin(glfwGetTime() * 0.3f);
 		//lightColor.z = sin(glfwGetTime() * 0.6f);
-		glm::vec3 worldColor = glm::vec3(0.5f);
+		glm::vec3 worldColor = glm::vec3(0.2f);
 		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
 		//lightingShader.setVec3("light.pos", lightPos);
-		lightingShader.setVec3("light.dir", glm::vec3(-0.2f, -1.0f, -0.3f));
-		lightingShader.setVec3("light.pos", lightPos);
+		/*lightingShader.setVec3("light.dir", glm::vec3(-0.2f, -1.0f, -0.3f));*/
+		lightingShader.setVec3("light.pos", camera.cameraPos);
+		lightingShader.setVec3("light.dir", camera.cameraZ);
+		lightingShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.0f)));
+		lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(15.0f)));
+
 		lightingShader.setVec3("light.diffuse", lightColor);
-		lightingShader.setVec3("light.ambient", glm::vec3(0.3f));
+		lightingShader.setVec3("light.ambient", glm::vec3(0.2f));
 		lightingShader.setVec3("light.specular", glm::vec3(1.5f));
 		lightingShader.setFloat("light.constant", 1.0f);
-		lightingShader.setFloat("light.linear", 0.09f);
-		lightingShader.setFloat("light.quadratic", 0.032f);
-		lightingShader.setInt("material.diffuse", 0);
+		lightingShader.setFloat("light.linear", 0.045f);
+		lightingShader.setFloat("light.quadratic", 0.0075f);
+		lightingShader.setInt("material.diffuse", 0);//sampler
 		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-		lightingShader.setInt("material.specular", 1);
+		lightingShader.setInt("material.specular", 1);//sampler
 		lightingShader.setFloat("material.shininess", 64.0f);
 		for(int i = 0; i < 10; i++)
 		{
