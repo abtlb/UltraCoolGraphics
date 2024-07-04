@@ -340,18 +340,28 @@ int main()
 
 		//light source
 		lightSourceShader.useProgram();
-		model = glm::mat4(1.0f);
-		//inside factor: speed, outside factor: radius
-		//lightPos = glm::vec3(sin(glfwGetTime() * 0.4f) * 2, .y, cos(glfwGetTime() * 0.4f) * 2) + glm::vec3(0, 0.0f, 3.0f);//rotate
-	   	model = glm::translate(model, lightPos);
-   		model = glm::scale(model, glm::vec3(0.2f));
-		view = camera.getViewMat();
-		proj = camera.getProjMat();
-		lightSourceShader.setMat4("model", model);
-		lightSourceShader.setMat4("view", view);
-		lightSourceShader.setMat4("proj", proj);
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::vec3 pointLightPositions[] =
+		{
+			glm::vec3(0.7f, 0.2f, 2.0f),
+			glm::vec3(2.3f, -3.3f, -4.0f),
+			glm::vec3(-4.0f, 2.0f, -12.0f),
+			glm::vec3(0.0f, 0.0f, -3.0f)
+		};
+		for(int i = 0; i < 4; i++)
+		{
+			//inside factor: speed, outside factor: radius
+			//lightPos = glm::vec3(sin(glfwGetTime() * 0.4f) * 2, .y, cos(glfwGetTime() * 0.4f) * 2) + glm::vec3(0, 0.0f, 3.0f);//rotate
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f));
+			view = camera.getViewMat();
+			proj = camera.getProjMat();
+			lightSourceShader.setMat4("model", model);
+			lightSourceShader.setMat4("view", view);
+			lightSourceShader.setMat4("proj", proj);
+			glBindVertexArray(lightVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		//our cube
 		lightingShader.useProgram();
@@ -361,12 +371,13 @@ int main()
 		//lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
 		//lightColor.y = sin(glfwGetTime() * 0.3f);
 		//lightColor.z = sin(glfwGetTime() * 0.6f);
-		glm::vec3 worldColor = glm::vec3(0.2f);
+		//glm::vec3 worldColor = glm::vec3(0.349, 0.235, 0.341) * 0.5f;
+		glm::vec3 worldColor = glm::vec3(0.1) * 0.5f;
 		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
 		//lightingShader.setVec3("light.pos", lightPos);
 		/*lightingShader.setVec3("light.dir", glm::vec3(-0.2f, -1.0f, -0.3f));*/
-		lightingShader.setVec3("light.pos", camera.cameraPos);
+		/*lightingShader.setVec3("light.pos", camera.cameraPos);
 		lightingShader.setVec3("light.dir", camera.cameraZ);
 		lightingShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.0f)));
 		lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(15.0f)));
@@ -376,7 +387,37 @@ int main()
 		lightingShader.setVec3("light.specular", glm::vec3(1.5f));
 		lightingShader.setFloat("light.constant", 1.0f);
 		lightingShader.setFloat("light.linear", 0.045f);
-		lightingShader.setFloat("light.quadratic", 0.0075f);
+		lightingShader.setFloat("light.quadratic", 0.0075f);*/
+
+		lightingShader.setVec3("dirLight.dir", glm::vec3(-0.2f, -1.0f, -0.3f));
+		lightingShader.setVec3("dirLight.ambient", glm::vec3(0.1f));
+		lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.0, 0.0, 0.5));
+		lightingShader.setVec3("dirLight.specular", glm::vec3(1.0f));
+
+		for (int i = 0; i < 4; i++)
+		{
+			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].pos", pointLightPositions[i]);
+			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].ambient", glm::vec3(0.0f));
+			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].diffuse", glm::vec3(0.5f, 0.0f, 0.0f));
+			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
+
+			lightingShader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			lightingShader.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.14f);
+			lightingShader.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.07f);
+
+		}
+
+		lightingShader.setVec3("flashlight.pos", camera.cameraPos);
+		lightingShader.setVec3("flashlight.dir", camera.cameraZ);
+		lightingShader.setVec3("flashlight.ambient", glm::vec3(0.0f));
+		lightingShader.setVec3("flashlight.diffuse", glm::vec3(0.0f, 0.6f, 0.0f));
+		lightingShader.setVec3("flashlight.specular", glm::vec3(1.0f));
+		lightingShader.setFloat("flashlight.constant", 1.0f);
+		lightingShader.setFloat("flashlight.linear", 0.045f);
+		lightingShader.setFloat("flashlight.quadratic", 0.0075f);
+		lightingShader.setFloat("flashlight.innerCutOff", glm::cos(glm::radians(12.0f)));
+		lightingShader.setFloat("flashlight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
 		lightingShader.setInt("material.diffuse", 0);//sampler
 		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
 		lightingShader.setInt("material.specular", 1);//sampler
@@ -442,12 +483,14 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)//forward
 	{
 		//fps camera(should be in camera class)
-		camera.cameraPos += cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
+		//camera.cameraPos += cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
+		camera.cameraPos += cameraSpeed * glm::vec3(camera.cameraZ);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)//back
 	{
 		//fps camera(should be in camera class)
-		camera.cameraPos -= cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
+		//camera.cameraPos -= cameraSpeed * glm::vec3(camera.cameraZ.x, 0, camera.cameraZ.z);
+		camera.cameraPos -= cameraSpeed * glm::vec3(camera.cameraZ);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)//right
 	{
