@@ -7,12 +7,28 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
 
+//struct Material
+//{
+////    sampler2D diffuse;
+////    sampler2D specular;
+////    float shininess;
+//    sampler2D texture_diffuse1;
+//    sampler2D texture_diffuse2;
+//    sampler2D texture_diffuse3;
+//    sampler2D texture_specular1;
+//    sampler2D texture_specular2;
+//    sampler2D texture_specular3;
+//
+//};
+
 struct Material
 {
     sampler2D diffuse;
     sampler2D specular;
     float shininess;
+
 };
+
 uniform Material material;//we only need one material per fragment, right?
 
 //struct Light

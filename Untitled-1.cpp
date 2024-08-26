@@ -1,5 +1,5 @@
 #include <iostream>
-#include <glad/glad.h>//loads functions to function pointers
+#include <glad/glad.h>//loads functions to function pointers(must be before glfw)
 #include <GLFW/glfw3.h>
 #include <shader.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -8,6 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 int main();
 
@@ -25,7 +28,7 @@ public:
 	float a;
 };
 
-int width = 800, height = 600;
+int width = 1600, height = 900;
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
 //glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
 //glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
