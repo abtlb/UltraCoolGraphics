@@ -2,8 +2,6 @@
 #include <glad/glad.h>//loads functions to function pointers(must be before glfw)
 #include <GLFW/glfw3.h>
 #include <shader.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -11,6 +9,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "Model.h"
 
 int main();
 
@@ -283,6 +282,11 @@ int main()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
 	glfwSetCursorPosCallback(window, mouse_callback);
 
+	Model backpackModel("C:/Users/balla/source/repos/UltraCoolGraphics/UltraCoolGraphics/Models/backpack/backpack.obj");
+	//Model backpackModel("C:\Users\balla\source\repos\UltraCoolGraphics\UltraCoolGraphics\Models\backpack\backpack.obj");
+	//C:\Users\balla\source\repos\UltraCoolGraphics\UltraCoolGraphics\Models\STL_Middle Finger Ghost.obj
+
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -296,14 +300,10 @@ int main()
 		processInput(window);
 
 		//rendering commands
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap1);
-
-		//glBindVertexArray(VAO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -318,9 +318,9 @@ int main()
 		glm::vec3(-1.3f, 1.0f, -1.5f)
 		};
 
-		glEnable(GL_DEPTH_TEST);
 
 		//10 rotating cubes
+		//shader.useProgram();
 		//int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
 		//for (int i = 0; i < 10; i++)
 		//{
@@ -401,7 +401,7 @@ int main()
 		{
 			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].pos", pointLightPositions[i]);
 			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].ambient", glm::vec3(0.0f));
-			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].diffuse", glm::vec3(0.5f, 0.0f, 0.0f));
+			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].diffuse", glm::vec3(1.0f, 1.0f, 1.0f) * 0.5f);
 			lightingShader.setVec3("pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 
 			lightingShader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
@@ -413,7 +413,7 @@ int main()
 		lightingShader.setVec3("flashlight.pos", camera.cameraPos);
 		lightingShader.setVec3("flashlight.dir", camera.cameraZ);
 		lightingShader.setVec3("flashlight.ambient", glm::vec3(0.0f));
-		lightingShader.setVec3("flashlight.diffuse", glm::vec3(0.0f, 0.6f, 0.0f));
+		lightingShader.setVec3("flashlight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f) * 0.0f);
 		lightingShader.setVec3("flashlight.specular", glm::vec3(1.0f));
 		lightingShader.setFloat("flashlight.constant", 1.0f);
 		lightingShader.setFloat("flashlight.linear", 0.045f);
@@ -421,11 +421,11 @@ int main()
 		lightingShader.setFloat("flashlight.innerCutOff", glm::cos(glm::radians(12.0f)));
 		lightingShader.setFloat("flashlight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-		lightingShader.setInt("material.diffuse", 0);//sampler
 		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-		lightingShader.setInt("material.specular", 1);//sampler
-		lightingShader.setFloat("material.shininess", 64.0f);
-		for(int i = 0; i < 10; i++)
+		//lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
+		//lightingShader.setFloat("material.texture_specular1", 1);//sampler
+		//lightingShader.setFloat("material.shininess", 64.0f);
+		/*for(int i = 0; i < 10; i++)
 		{
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -437,7 +437,18 @@ int main()
 			lightingShader.setMat4("proj", proj);
 			glBindVertexArray(cubeVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		}*/
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0,0,0));
+		model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+		model = glm::rotate(model, glm::radians(float(sin(glfwGetTime()) * 180)), glm::vec3(0, 1, 0));
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		lightingShader.setMat4("model", model);
+		lightingShader.setMat4("view", view);
+		lightingShader.setMat4("proj", proj);
+		backpackModel.Draw(lightingShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -483,6 +494,11 @@ void processInput(GLFWwindow* window)
 	}
 
 	float cameraSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	{
+		cameraSpeed *= 2;
+	}
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)//forward
 	{
 		//fps camera(should be in camera class)

@@ -65,6 +65,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);//set active texture unit to the default
+		shader.setFloat("material.shininess", 64.0f);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

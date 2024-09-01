@@ -5,6 +5,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 class Model
@@ -122,9 +123,9 @@ private:
 
 			//check if texture is already loaded
 			bool texLoaded = false;
-			for (int j = 0; j < loadedTextures.size(); i++)
+			for (int j = 0; j < loadedTextures.size(); j++)
 			{
-				if (strcmp(file.C_Str(), loadedTextures[j].path.C_Str()))
+				if (strcmp(file.C_Str(), loadedTextures[j].path.C_Str()) == 0)
 				{
 					texLoaded = true;
 					textures.push_back(loadedTextures[j]);
@@ -156,7 +157,8 @@ private:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		int width, height, channelsNum;
-		unsigned char* texData = stbi_load("wall.jpg", &width, &height, &channelsNum, 0);
+		std::string path = dir + '/' + file;
+		unsigned char* texData = stbi_load(path.c_str(), &width, &height, &channelsNum, 0);
 
 
 		if (texData)
