@@ -227,6 +227,8 @@ int main()
 
 	Shader lightingShader("./lighting.vert", "./lighting.frag");
 
+	Shader outlineShader("./lighting.vert", "./outline.frag");
+
 	unsigned int diffuseMap1;
 	glGenTextures(1, &diffuseMap1);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap1);
@@ -287,19 +289,24 @@ int main()
 	//C:\Users\balla\source\repos\UltraCoolGraphics\UltraCoolGraphics\Models\STL_Middle Finger Ghost.obj
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
 	while (!glfwWindowShouldClose(window))
 	{
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		/*glClearColor(0.3f, 0.3f, 0.5f, 1.0f);*/
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		
 
 		//input
 		processInput(window);
 
 		//rendering commands
+		glStencilMask(0x00);//for outline
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
 		glActiveTexture(GL_TEXTURE1);
@@ -442,13 +449,33 @@ int main()
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0,0,0));
 		model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-		model = glm::rotate(model, glm::radians(float(sin(glfwGetTime()) * 180)), glm::vec3(0, 1, 0));
+		//model = glm::rotate(model, glm::radians(float(sin(glfwGetTime()) * 180)), glm::vec3(0, 1, 0));
 		view = camera.getViewMat();
 		proj = camera.getProjMat();
 		lightingShader.setMat4("model", model);
 		lightingShader.setMat4("view", view);
 		lightingShader.setMat4("proj", proj);
+
+		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+		glStencilFunc(GL_ALWAYS, 1, 0XFF);
+		glStencilMask(0xFF);
 		backpackModel.Draw(lightingShader);
+
+		glDisable(GL_DEPTH_TEST);
+		outlineShader.useProgram();
+		model = glm::scale(model, glm::vec3(1.02, 1.02, 1.02));
+		outlineShader.setMat4("model", model);
+		outlineShader.setMat4("view", view);
+		outlineShader.setMat4("proj", proj);
+		glStencilMask(0x00);
+		//glDepthFunc(GL_ALWAYS);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		backpackModel.Draw(outlineShader);
+		
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+		//glDepthFunc(GL_LESS);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

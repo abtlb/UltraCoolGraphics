@@ -191,23 +191,17 @@ float far = 100;
 
 void main()
 {
-//    vec3 norm = normalize(Normal);
-//    vec3 viewDir = normalize(cameraPos - FragPos);
-//
-//    vec3 result = vec3(0.0);
-//    result += GetDirLight(dirLight, norm, viewDir);
-//    for(int i = 0; i < POINT_LIGHTS_NUM; i++)
-//    {
-//        result += GetPointLight(pointLights[i], norm, viewDir);
-//    }
-//    result += GetSpotlight(flashlight, norm, viewDir);
+    vec3 norm = normalize(Normal);
+    vec3 viewDir = normalize(cameraPos - FragPos);
 
-    //FragColor = vec4(result, 1.0);
+    vec3 result = vec3(0.0);
+    result += GetDirLight(dirLight, norm, viewDir);
+    for(int i = 0; i < POINT_LIGHTS_NUM; i++)
+    {
+        result += GetPointLight(pointLights[i], norm, viewDir);
+    }
+    result += GetSpotlight(flashlight, norm, viewDir);
 
-    //make a shader for that
-    float ndc = gl_FragCoord.z * 2.0 - 1;
-    float linearDepth = 1 - ((2.0 * near * far) / (far + near - ndc * (far - near)) / far);
-
-    FragColor = vec4(vec3(linearDepth), 1.0);
+    FragColor = vec4(result, 1.0);
 }
 
