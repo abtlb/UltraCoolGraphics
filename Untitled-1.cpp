@@ -10,6 +10,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Model.h"
+#include "Texture.h"
 
 int main();
 
@@ -28,11 +29,6 @@ public:
 };
 
 int width = 1600, height = 900;
-//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-//glm::vec3 cameraZ = glm::vec3(0.0f, 0.0f, -1.0f);//negative z axis(camera front)
-//glm::vec3 cameraY = glm::vec3(0.0f, 1.0f, 0.0f);
-//glm::vec3 cameraX = glm::cross(cameraY, cameraZ);
-//float yaw = -90.0f, pitch = 0.0f;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), 45.0f, (float)width / height);
 
@@ -103,7 +99,7 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
 
-	//cube
+#pragma region Cube setup
 	float cubeVertices[] =
 	{
 		// positions(3) // normals(3) // texture coords(2)
@@ -157,6 +153,48 @@ int main()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));//tex coords
 	glEnableVertexAttribArray(2);
+	glBindVertexArray(0);
+#pragma endregion
+
+#pragma region Quad setup
+	float quadVertices[] = 
+	{
+		// Positions      // Texture Coords
+		 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,  // Top-right
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f,  // Bottom-right
+		-0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  // Bottom-left
+		-0.5f,  0.5f, 0.0f,  0.0f, 1.0f   // Top-left
+	};
+
+	unsigned int quadIndices[] =
+	{
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	unsigned int quadVAO;
+	glGenVertexArrays(1, &quadVAO);
+	glBindVertexArray(quadVAO);
+	unsigned int quadVBO;
+	glGenBuffers(1, &quadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+	unsigned int quadEBO;
+	glGenBuffers(1, &quadEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);//coordinates
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));//tex coords
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+
+#pragma endregion
+
+
 
 	unsigned int lightVAO;
 	glGenVertexArrays(1, &lightVAO);
@@ -165,110 +203,22 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT ,GL_FALSE, 8 * sizeof(float), (void*)0);//coordinates
 	glEnableVertexAttribArray(0);
 
+#pragma region Load textures
+	unsigned int texture1 = Texture::TextureFromFile("wall.jpg");
+	unsigned int texture2 = Texture::TextureFromFile("awesomeface.png");
+	unsigned int grassTexture = Texture::TransparentTextureFromFile("grass.png");
+	unsigned int diffuseMap1 = Texture::TextureFromFile("container2.png");
+	unsigned int specularMap1 = Texture::TextureFromFile("container2_specular.png");
+#pragma endregion
 
-	unsigned int texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width1, height1, channelsNum1;
-	unsigned char* texData1 = stbi_load("wall.jpg", &width1, &height1, &channelsNum1, 0);
-
-
-	if (texData1)
-	{
-		//internalFormat argument: how opengl is going to store the texture data
-		//format argument: format of the pixel data provided
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, texData1);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(texData1);
-	}
-	else
-	{
-		std::cerr << "Failed to load the texture";
-	}
-
-	//operations done on buffer are stored in the texture
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//stbi_set_flip_vertically_on_load(true);
-	int width2, height2, channelsNum2;
-	unsigned char* texData2 = stbi_load("awesomeface.png", &width2, &height2, &channelsNum2, 0);
-	if (texData2)
-	{	
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData2);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(texData2);
-	}
-	else
-	{
-		std::cerr << "Failed to load the texture";
-	}
-
-	Shader shader("./v.vert", "./f.frag");
-	//shader.useProgram();
-	shader.setInt("texture1", 0);
-	shader.setInt("texture2", 1);
-
+#pragma region Shader definition
 	Shader lightSourceShader("./lightSource.vert", "./lightSource.frag");
-	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 4.0f);
-
 	Shader lightingShader("./lighting.vert", "./lighting.frag");
-
 	Shader outlineShader("./lighting.vert", "./outline.frag");
+	Shader grassShader("./grass.vert", "./grass.frag");
+#pragma endregion
 
-	unsigned int diffuseMap1;
-	glGenTextures(1, &diffuseMap1);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	int width3, height3, channelsNum3;
-	unsigned char* texData3 = stbi_load("container2.png", &width3, &height3, &channelsNum3, 0);
-	if (texData3)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width3, height3, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData3);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(texData3);
-	}
-	else
-	{
-		std::cerr << "Failed to load the texture";
-	}
-
-	unsigned int specularMap1;
-	glGenTextures(1, &specularMap1);
-	glBindTexture(GL_TEXTURE_2D, specularMap1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	int width4, height4, channelsNum4;
-	unsigned char* texData4 = stbi_load("container2_specular.png", &width4, &height4, &channelsNum4, 0);
-	if (texData4)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width4, height4, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData4);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(texData4);
-	}
-	else
-	{
-		std::cerr << "Failed to load the texture";
-	}
-
+#pragma region Setup Rotating cubes
 	float cubeRotSpeeds[10] = {2};
 	for (int i = 0; i < 10; i++)
 	{
@@ -279,17 +229,33 @@ int main()
 	{
 		cubeRotAxis[i] = glm::vec3(((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX));
 	}
+	glm::vec3 cubePositions[] = {
+		//glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(2.0f, 5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f, 3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f, 2.0f, -2.5f),
+		glm::vec3(1.5f, 0.2f, -6.5f),
+		glm::vec3(-1.3f, 1.0f, -3.5f)
+	};
+
+#pragma endregion
+
 
 	//setup mouse input
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	Model backpackModel("C:/Users/balla/source/repos/UltraCoolGraphics/UltraCoolGraphics/Models/backpack/backpack.obj");
-	//Model backpackModel("C:\Users\balla\source\repos\UltraCoolGraphics\UltraCoolGraphics\Models\backpack\backpack.obj");
-	//C:\Users\balla\source\repos\UltraCoolGraphics\UltraCoolGraphics\Models\STL_Middle Finger Ghost.obj
+
+	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 4.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_BLEND);
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -299,7 +265,6 @@ int main()
 
 		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		
 
 		//input
 		processInput(window);
@@ -311,40 +276,31 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap1);
-		
-		glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(2.0f, 5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f, 3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f, 2.0f, -2.5f),
-		glm::vec3(1.5f, 0.2f, -1.5f),
-		glm::vec3(-1.3f, 1.0f, -1.5f)
-		};
 
-
+#pragma region Render Rotating Cubes
 		//10 rotating cubes
-		//shader.useProgram();
-		//int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
-		//for (int i = 0; i < 10; i++)
-		//{
-		//	glm::mat4 model = glm::mat4(1.0f);
-		//	model = glm::translate(model, cubePositions[i]);
-		//	model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
-		//	shader.setMat4("model", model);
+		lightingShader.useProgram();
+		int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::rotate(model, cubeRotSpeeds[i] * (float)glfwGetTime() * glm::radians(45.0f), cubeRotAxis[i]);
+			lightingShader.setMat4("model", model);
 
-		//	glm::mat4 view = camera.getViewMat();
-		//	glm::mat4 proj = camera.getProjMat();
+			glm::mat4 view = camera.getViewMat();
+			glm::mat4 proj = camera.getProjMat();
 
-		//	shader.setMat4("view", view);
-		//	shader.setMat4("proj", proj);
-		//	//camera end
-		//	glBindVertexArray(cubeVAO);
-		//	glDrawArrays(GL_TRIANGLES, 0, 36);
-		//}
+			lightingShader.setMat4("view", view);
+			lightingShader.setMat4("proj", proj);
+			lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
+			lightingShader.setFloat("material.texture_specular1", 1);//sampler
+			lightingShader.setFloat("material.shininess", 64.0f);
+			//camera end
+			glBindVertexArray(cubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+#pragma endregion
 
 		glm::mat4 model, view, proj;
 
@@ -373,32 +329,10 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		//our cube
 		lightingShader.useProgram();
-		//lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-		//lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::vec3 lightColor = glm::vec3(2.0f);
-		//lightColor.x = sin(glfwGetTime() * 0.1f) * 0.5f;//inside controls change rate, outside controls intensity
-		//lightColor.y = sin(glfwGetTime() * 0.3f);
-		//lightColor.z = sin(glfwGetTime() * 0.6f);
-		//glm::vec3 worldColor = glm::vec3(0.349, 0.235, 0.341) * 0.5f;
-		glm::vec3 worldColor = glm::vec3(0.1) * 0.5f;
-		glClearColor(worldColor.x, worldColor.y, worldColor.z, 1.0f);
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
-		//lightingShader.setVec3("light.pos", lightPos);
-		/*lightingShader.setVec3("light.dir", glm::vec3(-0.2f, -1.0f, -0.3f));*/
-		/*lightingShader.setVec3("light.pos", camera.cameraPos);
-		lightingShader.setVec3("light.dir", camera.cameraZ);
-		lightingShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.0f)));
-		lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-		lightingShader.setVec3("light.diffuse", lightColor);
-		lightingShader.setVec3("light.ambient", glm::vec3(0.2f));
-		lightingShader.setVec3("light.specular", glm::vec3(1.5f));
-		lightingShader.setFloat("light.constant", 1.0f);
-		lightingShader.setFloat("light.linear", 0.045f);
-		lightingShader.setFloat("light.quadratic", 0.0075f);*/
-
+#pragma region Lighting stuff
 		lightingShader.setVec3("dirLight.dir", glm::vec3(-0.2f, -1.0f, -0.3f));
 		lightingShader.setVec3("dirLight.ambient", glm::vec3(0.1f));
 		lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.0, 0.0, 0.5));
@@ -427,27 +361,64 @@ int main()
 		lightingShader.setFloat("flashlight.quadratic", 0.0075f);
 		lightingShader.setFloat("flashlight.innerCutOff", glm::cos(glm::radians(12.0f)));
 		lightingShader.setFloat("flashlight.outerCutOff", glm::cos(glm::radians(15.0f)));
+#pragma endregion
 
-		//lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-		//lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
-		//lightingShader.setFloat("material.texture_specular1", 1);//sampler
-		//lightingShader.setFloat("material.shininess", 64.0f);
-		/*for(int i = 0; i < 10; i++)
+#pragma region Ground
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0, -5, 0));
+		model = glm::scale(model, glm::vec3(10, 1, 10));
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		lightingShader.setMat4("model", model);
+		lightingShader.setMat4("view", view);
+		lightingShader.setMat4("proj", proj);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap1);
+		lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
+		lightingShader.setFloat("material.texture_specular1", 1);//sampler
+		lightingShader.setFloat("material.shininess", 64.0f);
+
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+#pragma endregion
+
+#pragma region Grass
+		std::vector<glm::vec3> vegetation;
+		vegetation.push_back(glm::vec3(-1.5f, -4.0f, -0.48f));
+		vegetation.push_back(glm::vec3(1.5f, -4.0f, 0.51f));
+		vegetation.push_back(glm::vec3(0.0f, -4.0f, 0.7f));
+		vegetation.push_back(glm::vec3(-0.3f, -4.0f, -2.3f));
+		vegetation.push_back(glm::vec3(0.5f, -4.0f, -0.6f));
+
+		grassShader.useProgram();
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		grassShader.setFloat("texture1", 0.6f);
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		grassShader.setMat4("view", view);
+		grassShader.setMat4("proj", proj);
+		for (unsigned int i = 0; i < vegetation.size(); i++)
 		{
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, glm::radians(30.0f) * i, cubeRotAxis[i]);
-			view = camera.getViewMat();
-			proj = camera.getProjMat();
-			lightingShader.setMat4("model", model);
-			lightingShader.setMat4("view", view);
-			lightingShader.setMat4("proj", proj);
-			glBindVertexArray(cubeVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}*/
+			model = glm::translate(model, vegetation[i]);
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
+			grassShader.setMat4("model", model);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
 
+#pragma endregion
+
+#pragma region Render backpack
+
+		lightingShader.useProgram();
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0,0,0));
+		model = glm::translate(model, glm::vec3(0,0,-5));
 		model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
 		//model = glm::rotate(model, glm::radians(float(sin(glfwGetTime()) * 180)), glm::vec3(0, 1, 0));
 		view = camera.getViewMat();
@@ -477,6 +448,8 @@ int main()
 		glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LESS);
 
+#pragma endregion
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -492,11 +465,11 @@ void framebufferSizeCallback(GLFWwindow* window, int _width, int _height)
 	height = _height;
 }
 
+bool firstMouse = true;
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 {
-	//---implement first input---
 	float sens = 0.1f;
-	static float lastX = width / 2.0f, lastY = height / 2.0f;
+	static float lastX = xPos, lastY = yPos;
 	float xOffset = xPos - lastX, yOffset = lastY - yPos;//y screen coordinates range from top to bottom
 	lastX = xPos;
 	lastY = yPos;

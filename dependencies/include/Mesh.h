@@ -10,19 +10,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include "shader.h"
+#include "Texture.h"
 
 struct Vertex
 {
 	glm::vec3 pos;
 	glm::vec3 normal;
 	glm::vec2 texCoords;
-};
-
-struct Texture
-{
-	unsigned int id;
-	std::string type;
-	aiString path;
 };
 
 class Mesh

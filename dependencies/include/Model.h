@@ -5,8 +5,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "Texture.h"
 
 class Model
 {
@@ -136,7 +135,7 @@ private:
 			if(!texLoaded)
 			{
 				Texture tex;
-				tex.id = TextureFromFile(file.C_Str(), directory);
+				tex.id = Texture::TextureFromFile(file.C_Str(), directory);
 				tex.type = typeName;
 				tex.path = file;
 				textures.push_back(tex);
@@ -144,40 +143,6 @@ private:
 			}
 		}
 		return textures;
-	}
-
-	unsigned int TextureFromFile(const char* file, const std::string& dir)
-	{
-		unsigned int textureID;
-		glGenTextures(1, &textureID);
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		int width, height, channelsNum;
-		std::string path = dir + '/' + file;
-		unsigned char* texData = stbi_load(path.c_str(), &width, &height, &channelsNum, 0);
-
-
-		if (texData)
-		{
-			//internalFormat argument: how opengl is going to store the texture data
-			//format argument: format of the pixel data provided
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
-			glGenerateMipmap(GL_TEXTURE_2D);
-			stbi_image_free(texData);
-		}
-		else
-		{
-			std::cerr << "Failed to load the texture";
-		}
-
-		//operations done on buffer are stored in the texture
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		return textureID;
 	}
 };
 
