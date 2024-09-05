@@ -11,6 +11,7 @@
 #include <assimp/postprocess.h>
 #include "Model.h"
 #include "Texture.h"
+#include <map>
 
 int main();
 
@@ -207,6 +208,7 @@ int main()
 	unsigned int texture1 = Texture::TextureFromFile("wall.jpg");
 	unsigned int texture2 = Texture::TextureFromFile("awesomeface.png");
 	unsigned int grassTexture = Texture::TransparentTextureFromFile("grass.png");
+	unsigned int windowTexture = Texture::TransparentTextureFromFile("blending_transparent_window.png");
 	unsigned int diffuseMap1 = Texture::TextureFromFile("container2.png");
 	unsigned int specularMap1 = Texture::TextureFromFile("container2_specular.png");
 #pragma endregion
@@ -244,6 +246,22 @@ int main()
 
 #pragma endregion
 
+#pragma region Setup windows
+	std::vector<glm::vec3> windows;
+	windows.push_back(glm::vec3(-1.5f * 2, -4.0f, -0.48f * 2));
+	windows.push_back(glm::vec3(1.5f * 2, -4.0f, 0.51f * 2));
+	windows.push_back(glm::vec3(0.0f * 2, -4.0f, 0.7f * 2));
+	windows.push_back(glm::vec3(-0.3f * 2, -4.0f, -2.3f * 2));
+	windows.push_back(glm::vec3(0.5f * 2, -4.0f, -0.6f * 2));
+	std::map<float, glm::vec3> sortedWindows;
+	for (int i = 0; i < windows.size(); i++)
+	{
+		float distance = glm::length(windows[i] - camera.cameraPos);
+		sortedWindows[distance] = windows[i];
+	}
+#pragma endregion
+
+
 
 	//setup mouse input
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//capture the cursor and make it non-visible
@@ -256,6 +274,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -364,9 +383,11 @@ int main()
 #pragma endregion
 
 #pragma region Ground
+		glm::vec3 groundPos = glm::vec3(0, -5, 0);
+		glm::vec3 groundDimensions = glm::vec3(10, 1, 10);
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0, -5, 0));
-		model = glm::scale(model, glm::vec3(10, 1, 10));
+		model = glm::translate(model, groundPos);
+		model = glm::scale(model, groundDimensions);
 		view = camera.getViewMat();
 		proj = camera.getProjMat();
 		lightingShader.setMat4("model", model);
@@ -387,12 +408,12 @@ int main()
 #pragma endregion
 
 #pragma region Grass
-		std::vector<glm::vec3> vegetation;
-		vegetation.push_back(glm::vec3(-1.5f, -4.0f, -0.48f));
-		vegetation.push_back(glm::vec3(1.5f, -4.0f, 0.51f));
-		vegetation.push_back(glm::vec3(0.0f, -4.0f, 0.7f));
-		vegetation.push_back(glm::vec3(-0.3f, -4.0f, -2.3f));
-		vegetation.push_back(glm::vec3(0.5f, -4.0f, -0.6f));
+		/*std::vector<glm::vec3> vegetation;
+		vegetation.push_back(glm::vec3(-1.5f * 2, -4.0f, -0.48f * 2));
+		vegetation.push_back(glm::vec3(1.5f * 2, -4.0f, 0.51f * 2));
+		vegetation.push_back(glm::vec3(0.0f * 2, -4.0f, 0.7f * 2));
+		vegetation.push_back(glm::vec3(-0.3f * 2, -4.0f, -2.3f * 2));
+		vegetation.push_back(glm::vec3(0.5f * 2, -4.0f, -0.6f * 2));
 
 		grassShader.useProgram();
 		glBindVertexArray(quadVAO);
@@ -410,8 +431,38 @@ int main()
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
 			grassShader.setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		}
+		}*/
 
+#pragma endregion
+
+#pragma region Windows
+		
+
+		grassShader.useProgram();
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, windowTexture);
+		grassShader.setFloat("texture1", 0.6f);
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		grassShader.setMat4("view", view);
+		grassShader.setMat4("proj", proj);
+		/*for (unsigned int i = 0; i < windows.size(); i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, windows[i]);
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
+			grassShader.setMat4("model", model);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}*/
+		for (std::map<float, glm::vec3>::reverse_iterator iter = sortedWindows.rbegin(); iter != sortedWindows.rend(); iter++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, iter->second);
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
+			grassShader.setMat4("model", model);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
 #pragma endregion
 
 #pragma region Render backpack
