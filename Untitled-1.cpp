@@ -101,46 +101,56 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
 
 #pragma region Cube setup
-	float cubeVertices[] =
-	{
-		// positions(3) // normals(3) // texture coords(2)
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
+	float cubeVertices[] = {
+		// Back face
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // top-right
+		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, // bottom-right
+		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // top-right
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
+		-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, // top-left
+
+		// Front face
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // bottom-left
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, // bottom-right
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // top-right
+		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // top-right
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f, // top-left
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // bottom-left
+
+		// Left face
+		-0.5f,  0.5f,  0.5f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // top-right
+		-0.5f,  0.5f, -0.5f, -1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-left
+		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // bottom-left
+		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // bottom-left
+		-0.5f, -0.5f,  0.5f, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-right
+		-0.5f,  0.5f,  0.5f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // top-right
+
+		// Right face
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // top-left
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // bottom-right
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-right
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // bottom-right
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // top-left
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-left
+
+		 // Bottom face
+		 -0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 1.0f, // top-right
+		  0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 1.0f, // top-left
+		  0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, // bottom-left
+		  0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, // bottom-left
+		 -0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, // bottom-right
+		 -0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 1.0f, // top-right
+
+		 // Top face
+		 -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f, // top-left
+		  0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // bottom-right
+		  0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f, // top-right
+		  0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // bottom-right
+		 -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f, // top-left
+		 -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f  // bottom-left
 	};
+
 	unsigned int cubeVAO;
 	glGenVertexArrays(1, &cubeVAO);
 	glBindVertexArray(cubeVAO);
@@ -158,19 +168,14 @@ int main()
 #pragma endregion
 
 #pragma region Quad setup
-	float quadVertices[] = 
-	{
-		// Positions      // Texture Coords
-		 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,  // Top-right
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f,  // Bottom-right
-		-0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  // Bottom-left
-		-0.5f,  0.5f, 0.0f,  0.0f, 1.0f   // Top-left
-	};
-
-	unsigned int quadIndices[] =
-	{
-		0, 1, 3,
-		1, 2, 3
+	float quadVertices[] = {
+		// positions // texCoords
+		-1.0f, 1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, -1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 1.0f
 	};
 
 	unsigned int quadVAO;
@@ -181,14 +186,9 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 
-	unsigned int quadEBO;
-	glGenBuffers(1, &quadEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);//coordinates
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);//coordinates
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));//tex coords
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));//tex coords
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
@@ -214,10 +214,11 @@ int main()
 #pragma endregion
 
 #pragma region Shader definition
-	Shader lightSourceShader("./lightSource.vert", "./lightSource.frag");
-	Shader lightingShader("./lighting.vert", "./lighting.frag");
-	Shader outlineShader("./lighting.vert", "./outline.frag");
-	Shader grassShader("./grass.vert", "./grass.frag");
+	Shader lightSourceShader("./Shaders/lightSource.vert", "./Shaders/lightSource.frag");
+	Shader lightingShader("./Shaders/lighting.vert", "./Shaders/lighting.frag");
+	Shader outlineShader("./Shaders/lighting.vert", "./Shaders/outline.frag");
+	Shader grassShader("./Shaders/grass.vert", "./Shaders/grass.frag");
+	Shader screenShader("./Shaders/screen.vert", "./Shaders/screen.frag");
 #pragma endregion
 
 #pragma region Setup Rotating cubes
@@ -271,9 +272,35 @@ int main()
 
 	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 4.0f);
 
+#pragma region Framebuffer setup
+	unsigned int fbo1;
+	glGenFramebuffers(1, &fbo1);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+
+	auto colorAttachment = Texture::ColorAttachment(width, height);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" <<
+		std::endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);//render to the default framebuffer
+#pragma endregion
+
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
+	glEnable(GL_CULL_FACE);//i make it enabled by default
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -282,22 +309,25 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		//input
 		processInput(window);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 		//rendering commands
 		glStencilMask(0x00);//for outline
+
+#pragma region Render Rotating Cubes
+		//10 rotating cubes
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap1);
 
-#pragma region Render Rotating Cubes
-		//10 rotating cubes
 		lightingShader.useProgram();
 		int cubeNum = sizeof(cubePositions) / sizeof(glm::vec3);
 		for (int i = 0; i < 10; i++)
@@ -408,7 +438,9 @@ int main()
 #pragma endregion
 
 #pragma region Grass
-		/*std::vector<glm::vec3> vegetation;
+		/*
+		glDisable(GL_CULL_FACE);
+		std::vector<glm::vec3> vegetation;
 		vegetation.push_back(glm::vec3(-1.5f * 2, -4.0f, -0.48f * 2));
 		vegetation.push_back(glm::vec3(1.5f * 2, -4.0f, 0.51f * 2));
 		vegetation.push_back(glm::vec3(0.0f * 2, -4.0f, 0.7f * 2));
@@ -431,12 +463,15 @@ int main()
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
 			grassShader.setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		}*/
+		}
+		glEnable(GL_CULL_FACE);
+		*/
 
 #pragma endregion
 
 #pragma region Windows
 		
+		glDisable(GL_CULL_FACE);
 
 		grassShader.useProgram();
 		glBindVertexArray(quadVAO);
@@ -455,18 +490,22 @@ int main()
 			grassShader.setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}*/
-		for (std::map<float, glm::vec3>::reverse_iterator iter = sortedWindows.rbegin(); iter != sortedWindows.rend(); iter++)
+		//---PROBLEM HERE---
+		/*for (std::map<float, glm::vec3>::reverse_iterator iter = sortedWindows.rbegin(); iter != sortedWindows.rend(); iter++)
 		{
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, iter->second);
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
 			grassShader.setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		}
+		}*/
+
+		glEnable(GL_CULL_FACE);
 #pragma endregion
 
 #pragma region Render backpack
 
+		glDisable(GL_BLEND);
 		lightingShader.useProgram();
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0,0,-5));
@@ -497,9 +536,44 @@ int main()
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
 		//glDepthFunc(GL_LESS);
 
 #pragma endregion
+
+#pragma region Render face culling cube
+		lightingShader.useProgram();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(5, -5 ,-5));
+		lightingShader.setMat4("model", model);
+
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+
+		lightingShader.setMat4("view", view);
+		lightingShader.setMat4("proj", proj);
+		lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
+		lightingShader.setFloat("material.texture_specular1", 1);//sampler
+		lightingShader.setFloat("material.shininess", 64.0f);
+		//camera end
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+#pragma endregion
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		screenShader.useProgram();
+		screenShader.setFloat("texture1", 0);
+		glBindVertexArray(quadVAO);
+		glDisable(GL_DEPTH_TEST);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorAttachment);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glEnable(GL_DEPTH_TEST);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

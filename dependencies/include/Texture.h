@@ -25,6 +25,21 @@ public:
 		return GetTextureFromFile(file, dir, GL_RGBA);
 	}
 
+	static unsigned int ColorAttachment(const int& screenWidth, const int& screenHeight)
+	{
+		unsigned int tex;
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		return tex;
+	}
+
 private:
 	static unsigned int GetTextureFromFile(const char* file, const std::string& dir = "", GLenum format = GL_RGB)
 	{
