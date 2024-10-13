@@ -40,6 +40,42 @@ public:
 		return tex;
 	}
 
+	static unsigned int CubemapFromFiles(const char* (&files)[6])
+	{
+		unsigned int cubemap1;
+		glGenTextures(1, &cubemap1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
+
+
+		int width, height, channelsNum;
+		for (unsigned int i = 0; i < 6; i++)//number of cube faces is 6
+		{
+			unsigned char* data = stbi_load(files[i], &width, &height, &channelsNum, 0);
+			if (data)
+			{
+				//internalFormat argument: how opengl is going to store the texture data
+				//format argument: format of the pixel data provided
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cerr << "Failed to load texture " << files[i];
+				stbi_image_free(data);
+			}
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		return cubemap1;
+	}
+
 private:
 	static unsigned int GetTextureFromFile(const char* file, const std::string& dir = "", GLenum format = GL_RGB)
 	{

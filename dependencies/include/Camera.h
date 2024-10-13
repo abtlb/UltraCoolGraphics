@@ -24,7 +24,7 @@ public:
 		screenRatio = _screenRatio;
 	}
 
-	glm::mat4 getViewMat()
+	void updateCameraAxes()
 	{
 		glm::vec3 direction;
 		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -32,14 +32,14 @@ public:
 		direction.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 		cameraZ = glm::normalize(direction);
 
-		//not here
 		cameraX.x = sin(glm::radians(yaw));
 		cameraX.y = 0;
 		cameraX.z = -1 * cos(glm::radians(yaw));
 		cameraX = glm::normalize(cameraX);
-		//cameraY = 
+	}
 
-
+	glm::mat4 getViewMat()
+	{
 		glm::mat4 view = glm::mat4(1.0f);
 		view = glm::lookAt(cameraPos, cameraPos + cameraZ, cameraY);
 		return view;

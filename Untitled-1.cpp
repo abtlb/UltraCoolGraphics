@@ -29,7 +29,7 @@ public:
 	float a;
 };
 
-int width = 1600, height = 900;
+int width = 2560, height = 1400;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), 45.0f, (float)width / height);
 
@@ -167,6 +167,81 @@ int main()
 	glBindVertexArray(0);
 #pragma endregion
 
+
+#pragma region Skybox setup
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+
+
+	unsigned int skyboxVAO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glBindVertexArray(skyboxVAO);
+
+	unsigned int skyboxVBO;
+	glGenBuffers(1, &skyboxVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	const char* cubemapPaths[] =
+	{
+		"./skybox1/right.jpg",
+		"./skybox1/left.jpg",
+		"./skybox1/top.jpg",
+		"./skybox1/bottom.jpg",
+		"./skybox1/front.jpg",
+		"./skybox1/back.jpg"
+	};
+	unsigned int cubemap1 = Texture::CubemapFromFiles(cubemapPaths);
+#pragma endregion
+
+
 #pragma region Quad setup
 	float quadVertices[] = {
 		// positions // texCoords
@@ -218,7 +293,11 @@ int main()
 	Shader lightingShader("./Shaders/lighting.vert", "./Shaders/lighting.frag");
 	Shader outlineShader("./Shaders/lighting.vert", "./Shaders/outline.frag");
 	Shader grassShader("./Shaders/grass.vert", "./Shaders/grass.frag");
-	Shader screenShader("./Shaders/screen.vert", "./Shaders/screen.frag");
+	Shader screenShader("./Shaders/SingleTexture/screen.vert", "./Shaders/SingleTexture/screen.frag");
+	Shader screenRearShader("./Shaders/SingleTexture/screenrear.vert", "./Shaders/SingleTexture/screen.frag");
+	Shader greyScaleShader("./Shaders/SingleTexture/screen.vert", "./Shaders/SingleTexture/greyscale.frag");
+	Shader sharpenShader("./Shaders/SingleTexture/screen.vert", "./Shaders/SingleTexture/sharpen.frag");
+	Shader skyboxShader("./Shaders/cubemap.vert", "./Shaders/cubemap.frag");
 #pragma endregion
 
 #pragma region Setup Rotating cubes
@@ -272,7 +351,7 @@ int main()
 
 	glm::vec3 lightPos = glm::vec3(1.2f, 0.5f, 4.0f);
 
-#pragma region Framebuffer setup
+#pragma region Front Framebuffer setup
 	unsigned int fbo1;
 	glGenFramebuffers(1, &fbo1);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
@@ -297,11 +376,13 @@ int main()
 #pragma endregion
 
 
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);//i make it enabled by default
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -319,6 +400,27 @@ int main()
 
 		//rendering commands
 		glStencilMask(0x00);//for outline
+
+		glm::mat4 model, view, proj;
+
+#pragma region RenderCubemap
+		glDepthMask(GL_FALSE);
+		skyboxShader.useProgram();
+		view = glm::mat4(glm::mat3(camera.getViewMat()));//removes translation but keeps rotation
+		proj = camera.getProjMat();
+
+		skyboxShader.setMat4("view", view);
+		skyboxShader.setMat4("projection", proj);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
+		skyboxShader.setFloat("cubemap", 0);
+		glBindVertexArray(skyboxVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);
+
+#pragma endregion
+
 
 #pragma region Render Rotating Cubes
 		//10 rotating cubes
@@ -351,7 +453,6 @@ int main()
 		}
 #pragma endregion
 
-		glm::mat4 model, view, proj;
 
 		//light source
 		lightSourceShader.useProgram();
@@ -375,6 +476,7 @@ int main()
 			lightSourceShader.setMat4("view", view);
 			lightSourceShader.setMat4("proj", proj);
 			glBindVertexArray(lightVAO);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
@@ -382,8 +484,8 @@ int main()
 		lightingShader.setVec3("cameraPos", camera.cameraPos);
 
 #pragma region Lighting stuff
-		lightingShader.setVec3("dirLight.dir", glm::vec3(-0.2f, -1.0f, -0.3f));
-		lightingShader.setVec3("dirLight.ambient", glm::vec3(0.1f));
+		lightingShader.setVec3("dirLight.dir", glm::vec3(-0.2f, 1.0f, -1.0f));
+		lightingShader.setVec3("dirLight.ambient", glm::vec3(0.2f));
 		lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.0, 0.0, 0.5));
 		lightingShader.setVec3("dirLight.specular", glm::vec3(1.0f));
 
@@ -609,6 +711,8 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 		camera.pitch = 89.0f;
 	if (camera.pitch < -89.0f)
 		camera.pitch = -89.0f;
+
+	camera.updateCameraAxes();
 }
 
 void processInput(GLFWwindow* window)
