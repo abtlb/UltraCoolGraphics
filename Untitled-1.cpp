@@ -298,6 +298,8 @@ int main()
 	Shader greyScaleShader("./Shaders/SingleTexture/screen.vert", "./Shaders/SingleTexture/greyscale.frag");
 	Shader sharpenShader("./Shaders/SingleTexture/screen.vert", "./Shaders/SingleTexture/sharpen.frag");
 	Shader skyboxShader("./Shaders/cubemap.vert", "./Shaders/cubemap.frag");
+	Shader reflectionShader("./Shaders/envreflection.vert", "./Shaders/envreflection.frag");
+	Shader refractionShader("./Shaders/envreflection.vert", "./Shaders/envrefraction.frag");
 #pragma endregion
 
 #pragma region Setup Rotating cubes
@@ -402,24 +404,6 @@ int main()
 		glStencilMask(0x00);//for outline
 
 		glm::mat4 model, view, proj;
-
-#pragma region RenderCubemap
-		glDepthMask(GL_FALSE);
-		skyboxShader.useProgram();
-		view = glm::mat4(glm::mat3(camera.getViewMat()));//removes translation but keeps rotation
-		proj = camera.getProjMat();
-
-		skyboxShader.setMat4("view", view);
-		skyboxShader.setMat4("projection", proj);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
-		skyboxShader.setFloat("cubemap", 0);
-		glBindVertexArray(skyboxVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDepthMask(GL_TRUE);
-
-#pragma endregion
 
 
 #pragma region Render Rotating Cubes
@@ -643,27 +627,68 @@ int main()
 
 #pragma endregion
 
-#pragma region Render face culling cube
-		lightingShader.useProgram();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+#pragma region Render refracted backpack
+
+		refractionShader.useProgram();
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(5, -5 ,-5));
-		lightingShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(3, 3, -3));
+		model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+		//model = glm::rotate(model, glm::radians(float(sin(glfwGetTime()) * 180)), glm::vec3(0, 1, 0));
+		view = camera.getViewMat();
+		proj = camera.getProjMat();
+		refractionShader.setMat4("model", model);
+		refractionShader.setMat4("view", view);
+		refractionShader.setMat4("proj", proj);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
+		refractionShader.setFloat("cubemap", 0);
+		refractionShader.setVec3("cameraPos", camera.cameraPos);
+
+		backpackModel.Draw(refractionShader);
+
+#pragma endregion
+
+
+#pragma region Render reflection cube
+		reflectionShader.useProgram();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(5, 5 ,-5));
+		reflectionShader.setMat4("model", model);
 
 		view = camera.getViewMat();
 		proj = camera.getProjMat();
 
-		lightingShader.setMat4("view", view);
-		lightingShader.setMat4("proj", proj);
-		lightingShader.setFloat("material.texture_diffuse1", 0);//sampler
-		lightingShader.setFloat("material.texture_specular1", 1);//sampler
-		lightingShader.setFloat("material.shininess", 64.0f);
-		//camera end
+		reflectionShader.setMat4("view", view);
+		reflectionShader.setMat4("proj", proj);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
+		reflectionShader.setFloat("cubemap", 0);
+		reflectionShader.setVec3("cameraPos", camera.cameraPos);
+		
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 #pragma endregion
 
+#pragma region RenderCubemap
+		//glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
+		skyboxShader.useProgram();
+		view = glm::mat4(glm::mat3(camera.getViewMat()));//removes translation but keeps rotation
+		proj = camera.getProjMat();
+
+		skyboxShader.setMat4("view", view);
+		skyboxShader.setMat4("projection", proj);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap1);
+		skyboxShader.setFloat("cubemap", 0);
+		glBindVertexArray(skyboxVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+		//glDepthMask(GL_TRUE);
+
+#pragma endregion
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
 		glClear(GL_COLOR_BUFFER_BIT);
